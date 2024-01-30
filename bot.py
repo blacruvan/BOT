@@ -2,12 +2,13 @@ import logging
 import os
 from telegram import Update
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 from modulos.taboas import *
+from modulos.weather import *
 
 # Authentication to manage the bot
-#load_dotenv()
+load_dotenv()
 TOKEN = os.getenv('TOKEN')
 
 if TOKEN == None:
@@ -39,6 +40,9 @@ async def afirmador(update, context):
     answer = open('docs/resposta.txt', "rb")
     await context.bot.send_document(chat_id=update.effective_chat.id, document=answer)
 
+async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=getWeather())
+
 if __name__ == '__main__':
     # Start the application to operate the bot
     application = ApplicationBuilder().token(TOKEN).build()
@@ -50,6 +54,9 @@ if __name__ == '__main__':
     # Handler to manage text messages
     echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
     application.add_handler(echo_handler)
+
+    weather_handler = CommandHandler('tiempo', weather)
+    application.add_handler(weather_handler)
 
     #handler documentos
     application.add_handler(MessageHandler(filters.Document.ALL, afirmador))
