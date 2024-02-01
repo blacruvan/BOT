@@ -1,41 +1,28 @@
 def getNasaImage():
+    from PIL import Image
     import requests
+    import os
     KEY = 'TTAcbwe4sDbn2ZMc1pNY4XdxPUmC1hc5gpSDkCOL'
     URL = f'https://api.nasa.gov/planetary/apod?api_key={KEY}'
+    path = 'output/nasa.jpg'
     response = requests.get(URL)
     image, title, description = None, None, None
     info = response.json()
-    image = info['url']
-    title = info['title']
-    description = info['explanation']
-    image = getImage(image)
-    print(image, title, description)
+    image, title, description = info['url'], info['title'], info['explanation']
+    getImage(image, path)
+    return (path,f'{title}\n{description}')
 
     
-def getImage(url):
+def getImage(url, ruta):
     import requests
-    from PIL import Image
     from io import BytesIO
-    import os
+    from PIL import Image
     try:
         response = requests.get(url)
-        response.raise_for_status() 
-
-        image = Image.open(BytesIO(response.content))
-
-        if not os.path.exists('/output'):
-            os.makedirs('/output')
-
-        # Construir la ruta completa para guardar la imagen
-        nombre_archivo = os.path.join('/output', "NASA.jpg")
-
-        # Guardar la imagen en el directorio destino
-        image.save(nombre_archivo)
-
-        return nombre_archivo
-
-    except requests.exceptions.RequestException as e:
-        print(f"Error al obtener la imagen desde la URL: {e}")
-        return None
+        if response.status_code == 200:
+            imagen = Image.open(BytesIO(response.content))
+            imagen.save(ruta)
+    except Exception as e:
+        print(f'Error: {e}')
     
-getNasaImage()
+print(getNasaImage())
