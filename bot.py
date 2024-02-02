@@ -33,16 +33,6 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Son un bot, dime algo!")
 
-# function
-async def afirmador(update, context):
-    file = await context.bot.get_file(update.message.document)
-    filename = update.message.document.file_name
-    await file.download_to_drive(filename)
-  
-   # envía ficheiro de resposta
-    answer = open('docs/resposta.txt', "rb")
-    await context.bot.send_document(chat_id=update.effective_chat.id, document=answer)
-
 #weather
 async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=getWeather())
@@ -54,17 +44,29 @@ async def nasa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         if os.path.exists(image): os.remove(image)
     except Exception as e:
-        print(f'Error al intentar borrar la imagen: {e}')
+        print(f'Error when trying to delete the image: {e}')
 
 #jokes
 async def jokes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=getJokes())
 
-# archivos
+#files
 async def convert(update, context):
     file = await context.bot.get_file(update.message.document)
     filename = update.message.document.file_name
-    await file.download_to_drive(f"input/{filename}")
+    path = f'input/{filename}'
+    await file.download_to_drive(path)
+    try:
+        newPath = convertFile(path)
+        if os.path.exists(newPath):
+            answer = open(newPath, "rb")
+            await context.bot.send_document(chat_id=update.effective_chat.id, document=answer)
+            os.remove(path)
+            os.remove(newPath)
+    except Exception as e:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text='Unsupported file format.')
+        os.remove(path)
+        print(f'Unsupported file format')
 
 if __name__ == '__main__':
     # Start the application to operate the bot
@@ -86,15 +88,12 @@ if __name__ == '__main__':
     nasa_handler = CommandHandler('nasa', nasa)
     application.add_handler(nasa_handler)
 
-    #chistes
+    #jokes
     jokes_handler = CommandHandler('jokes', jokes)
     application.add_handler(jokes_handler)
 
-    #archivos
+    #files
     application.add_handler(MessageHandler(filters.Document.ALL, convert))
-
-    #handler documentos
-    application.add_handler(MessageHandler(filters.Document.ALL, afirmador))
     
     # Keeps the application running
     application.run_polling()
