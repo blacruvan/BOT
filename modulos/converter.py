@@ -28,12 +28,12 @@ def csvToJSON(file):
 def JSONToCsv(file):
     import pandas as pd
     import os
-
     try:
         df = pd.read_json(file, lines=True)
+        
         file_name = os.path.splitext(os.path.basename(file))[0]
         output_path = f'output/{file_name}.csv'
         
-        df.to_csv(output_path, index=False)       
+        df.to_csv(output_path, index=False)  
     except Exception as e:
         print(f'Error: {e}')

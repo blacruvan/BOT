@@ -4,16 +4,15 @@ from telegram import Update
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes
 from dotenv import load_dotenv
 
-from modulos.taboas import *
 from modulos.weather import *
 from modulos.nasa import *
 from modulos.jokes import *
 from modulos.converter import *
+from configuration import *
 
 # Authentication to manage the bot
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
-
 if TOKEN == None:
     print('Lembra indicar a variable TOKEN')
     print('docker run --rm -e TOKEN=xxx')
@@ -24,14 +23,20 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
+last_command = None
+def createInOut():
+    import os
+    
+    if not os.path.exists('output'):
+        os.makedirs('output')
+    if not os.path.exists('input'):
+        os.makedirs('input')
 
-# This function responds to echo handler
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
-
-# This function responds to start command handler
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Son un bot, dime algo!")
 
 #weather
 async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -52,45 +57,50 @@ async def jokes(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 #files
 async def convert(update, context):
-    file = await context.bot.get_file(update.message.document)
-    filename = update.message.document.file_name
-    path = f'input/{filename}'
-    await file.download_to_drive(path)
-    try:
-        newPath = convertFile(path)
-        if os.path.exists(newPath):
-            answer = open(newPath, "rb")
-            await context.bot.send_document(chat_id=update.effective_chat.id, document=answer)
+    global last_command
+    if last_command == '/convert':
+        print('SUUUUUUUUUU')
+        file = await context.bot.get_file(update.message.document)
+        filename = update.message.document.file_name
+        path = f'input/{filename}'
+        await file.download_to_drive(path)
+
+        try:
+            newPath = convertFile(path)
+            if os.path.exists(newPath):
+                answer = open(newPath, "rb")
+                await context.bot.send_document(chat_id=update.effective_chat.id, document=answer)
+                os.remove(path)
+                os.remove(newPath)
+        except Exception as e:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text='Unsupported file format.')
             os.remove(path)
-            os.remove(newPath)
-    except Exception as e:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text='Unsupported file format.')
-        os.remove(path)
-        print(f'Unsupported file format')
+            print(f'Unsupported file format{e}')
+
+async def ask4Doc(update, context):
+    global last_command
+    last_command = update.message.text
+    print(last_command)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Por favor, envíame el documento")
 
 if __name__ == '__main__':
-    # Start the application to operate the bot
     application = ApplicationBuilder().token(TOKEN).build()
-
-    # Handler to manage the start command
-    start_handler = CommandHandler('start', start)
-    application.add_handler(start_handler)
-
-    # Handler to manage text messages
+    createInOut()
+    
     echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
     application.add_handler(echo_handler)
 
     #weather
-    weather_handler = CommandHandler('weather', weather)
-    application.add_handler(weather_handler)
+    application.add_handler(CommandHandler('weather', weather))
 
     #nasa
-    nasa_handler = CommandHandler('nasa', nasa)
-    application.add_handler(nasa_handler)
+    application.add_handler(CommandHandler('nasa', nasa))
 
     #jokes
-    jokes_handler = CommandHandler('jokes', jokes)
-    application.add_handler(jokes_handler)
+    application.add_handler(CommandHandler('jokes', jokes))
+
+    application.add_handler(CommandHandler("convert", ask4Doc))
+    application.add_handler(CommandHandler("stats", ask4Doc))
 
     #files
     application.add_handler(MessageHandler(filters.Document.ALL, convert))

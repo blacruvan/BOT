@@ -5,8 +5,5 @@ def getJokes():
         response = requests.get(URL)
         info = response.json()
         return f"{info['setup']}\n\n{info['delivery']}"
-
     except Exception as e:
         return f"Error al obtener el chiste: {e}"
-
-print(getJokes())

@@ -67,7 +67,7 @@ def getWeather():
             skyList.append(string)
         
         rainList = []
-        for clave, valor in pRain.items():
+        for clave, valor in pRain.wsitems():
             string = ''
             if clave == 'manha':
                 clave = 'mañá'
