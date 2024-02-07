@@ -1,8 +1,9 @@
-def getNasaImage():
-    from PIL import Image
-    import requests
-    import os
+from pathlib import Path
+from io import BytesIO
+from PIL import Image
+import requests
 
+def getNasaImage() -> (Path, str):
     KEY = 'TTAcbwe4sDbn2ZMc1pNY4XdxPUmC1hc5gpSDkCOL'
     URL = f'https://api.nasa.gov/planetary/apod?api_key={KEY}'
 
@@ -11,17 +12,16 @@ def getNasaImage():
         image, title, description = None, None, None
         info = response.json()
         image, title, description = info['url'], info['title'], info['explanation']
-        path = f'output/nasa.{image.split(".")[-1]}'
+        path = Path(f'output/nasa.{image.split(".")[-1]}')
         getImage(image, path)
-        return (path,f'{title}\n{description}')
+        caption = f'<u><strong>{title}</strong></u>\n{description}'
+        return (path,caption if len(caption)<1024 else caption[:1024])
+        
     except Exception as e:
         print(f'Error getting data from API: {e}')
 
     
 def getImage(url, ruta):
-    import requests
-    from io import BytesIO
-    from PIL import Image
     try:
         response = requests.get(url)
         if response.status_code == 200:

@@ -49,7 +49,6 @@ def getWeather():
         221: "Sarabia"
     }
 
-    list = []
     response = requests.get(weatherLugo)
     weather = response.json()
     dia = ['Hoxe', 'Maña', 'Pasado']
@@ -67,11 +66,18 @@ def getWeather():
             skyList.append(string)
         
         rainList = []
-        for clave, valor in pRain.wsitems():
+        for clave, valor in pRain.items():
             string = ''
             if clave == 'manha':
                 clave = 'mañá'
             string += f'{clave}: {valor}% de probabilidade'
             rainList.append(string)
-        imprimir += f'{dia[n]} ({date[:10]}): \n\tTemperatura mínima: {minT}°C\n\tTemperatura máxima: {maxT}°C,\nCeos:\n\t{skyList[0]}\n\t{skyList[1]}\n\t{skyList[2]}\nChoiva:\n\t{rainList[0]}\n\t{rainList[1]}\n\t{rainList[2]}\n\n'
+
+        printDay = f'<u>{dia[n]} ({date[:10]})</u>:'
+        printTemp = f'\n    <b>Mínima:</b> {minT}°C\n    <b>Máxima:</b> {maxT}°C'
+        printSky = f'\n<b>Ceos:</b>\n    {skyList[0]}\n    {skyList[1]}\n    {skyList[2]}'
+        printRain = f'\n<b>Choiva:</b>\n    {rainList[0]}\n    {rainList[1]}\n    {rainList[2]}\n\n'
+        
+        imprimir += printDay + printTemp + printSky + printRain
+        #imprimir += f'{dia[n]} ({date[:10]}): \n\tTemperatura mínima: {minT}°C\n\tTemperatura máxima: {maxT}°C,\nCeos:\n\t{skyList[0]}\n\t{skyList[1]}\n\t{skyList[2]}\nChoiva:\n\t{rainList[0]}\n\t{rainList[1]}\n\t{rainList[2]}\n\n'
     return imprimir
