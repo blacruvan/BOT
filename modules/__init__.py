@@ -6,3 +6,4 @@ from .jokes import *
 from .converter import *
 from .stats import *
 from .newsletter import *
+from .cinema import *

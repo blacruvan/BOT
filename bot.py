@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 from pathlib import Path
 
+import requests
 import modules as mod
 import configuration as conf
 
@@ -27,27 +28,20 @@ logging.basicConfig(
 #---------------------------------------------------------------------------------------------------
 last_command = None
 
-
-    
-
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
 
-#weather
 async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mod.getWeather(), parse_mode='HTML')
 
-#NASA
 async def nasa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     image, text = mod.getNasaImage()
     await context.bot.send_photo(chat_id=update.effective_chat.id, photo=image, caption=text, parse_mode='HTML')
     conf.clearOutDir()
 
-#jokes
 async def jokes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mod.getJokes())
 
-#files
 async def processDocs(update, context):
     global last_command
 
@@ -84,13 +78,18 @@ async def ask4Doc(update, context):
     print(last_command)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Por favor, envíame el documento")
 
-async def proba(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="<u>Some text</u>", parse_mode='HTML') 
+async def newsletter(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/eldiario.jpg'), caption=mod.getHeadlines(), parse_mode='HTML')
 
-if __name__ == '__main__':
+async def cinema(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption=mod.getCinemaListings(), parse_mode='HTML')
+
+
+async def proba(update: Update, context: ContextTypes.DEFAULT_TYPE):    
+    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption='text')
+ 
+def main():
     application = ApplicationBuilder().token(TOKEN).build()
-    conf.createInOut()
-    
     echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
     application.add_handler(echo_handler)
     application.add_handler(CommandHandler('weather', weather))
@@ -98,8 +97,13 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('jokes', jokes))
     application.add_handler(CommandHandler("convert", ask4Doc))
     application.add_handler(CommandHandler("stats", ask4Doc))
+    application.add_handler(CommandHandler("newsletter", newsletter))
+    application.add_handler(CommandHandler("cinema", cinema))
     application.add_handler(CommandHandler("proba", proba))
     application.add_handler(MessageHandler(filters.Document.ALL, processDocs))
-    
-    # Keeps the application running
+
     application.run_polling()
+
+if __name__ == '__main__':
+    conf.createInOut()
+    main()
