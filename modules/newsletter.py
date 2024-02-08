@@ -8,12 +8,17 @@ def getHeadlines():
     soup = BeautifulSoup(page.content,'html.parser')
     html = ''
 
-    for new in soup.find_all(class_="ni-subtitle"):
+    headers = soup.find_all(class_="ni-subtitle")[:3]
+    for new in headers:
         headLine, link = new.a.text, new.a.get('href')
         html += f'- <a href="{link}">{headLine}</a>\n\n'
 
-    for new in soup.find_all(class_="ni-title")[:7]:
+    headers = soup.find_all(class_="ni-title")[:3]
+    for new in headers:
         headLine, link = new.a.text.strip(), new.a.get('href')
         html += f'- <a href="https://www.eldiario.es{link}">{headLine}</a>\n\n'
 
+    print(len(html))
     return html
+
+getHeadlines()

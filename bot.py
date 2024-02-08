@@ -90,6 +90,7 @@ async def proba(update: Update, context: ContextTypes.DEFAULT_TYPE):
  
 def main():
     application = ApplicationBuilder().token(TOKEN).build()
+    conf.createInOut()
     echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
     application.add_handler(echo_handler)
     application.add_handler(CommandHandler('weather', weather))
@@ -105,5 +106,4 @@ def main():
     application.run_polling()
 
 if __name__ == '__main__':
-    conf.createInOut()
     main()
