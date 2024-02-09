@@ -126,13 +126,14 @@ async def show_buttons(update, context):
         [InlineKeyboardButton("Weather", callback_data='weather'),
          InlineKeyboardButton("NASA", callback_data='nasa')],
         [InlineKeyboardButton("Jokes", callback_data='jokes'),
-         InlineKeyboardButton("Convert", callback_data='convert')],
-        [InlineKeyboardButton("Stats", callback_data='stats'),
-         InlineKeyboardButton("Newsletter", callback_data='newsletter')],
-        [InlineKeyboardButton("Cinema", callback_data='cinema')]
+         InlineKeyboardButton("Proposta", callback_data='convert')],
+        [InlineKeyboardButton("Convert", callback_data='convert'),
+         InlineKeyboardButton("Stats", callback_data='stats')],
+        [InlineKeyboardButton("Newsletter", callback_data='newsletter'),
+         InlineKeyboardButton("Cinema", callback_data='cinema')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    msg = await context.bot.send_message(update.effective_chat.id, 'Menu', reply_markup=reply_markup)
+    msg = await context.bot.send_message(update.effective_chat.id, 'MENU', reply_markup=reply_markup)
     msgId = msg.message_id
 
 def main():
@@ -151,7 +152,7 @@ def main():
     application.add_handler(CommandHandler("proba", proba))
 
     application.add_handler(CallbackQueryHandler(button_click))
-    application.add_handler(CommandHandler('start', show_buttons))
+    application.add_handler(CommandHandler('menu', show_buttons))
 
     application.add_handler(MessageHandler(filters.Document.ALL, processDocs))
 

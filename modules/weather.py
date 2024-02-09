@@ -1,7 +1,11 @@
 def getWeather():
     import requests
     import resources.weather_codes as weather
-    weatherLugo = 'https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc=27028&request_locale=gl'
+    lugo = '27028'
+    coruña = '15030'
+    pontevedra = '36038'
+    ourense = '32054'
+    weatherLugo = f'https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc={ourense}&request_locale=gl'
 
     clima = weather.emojis
 
