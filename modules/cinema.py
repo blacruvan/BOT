@@ -12,5 +12,3 @@ def getCinemaListings():
         url = noticia.h3.get('data-link')
         html += f'- <a href="{url}">{film}</a>\n\n'
     return html
-    
-getCinemaListings()

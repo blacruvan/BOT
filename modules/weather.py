@@ -1,53 +1,9 @@
 def getWeather():
     import requests
+    import resources.weather_codes as weather
     weatherLugo = 'https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc=27028&request_locale=gl'
 
-    clima = {
-        -9999: "Non dispoñible",
-        101: "Despexado",
-        102: "Nubes altas",
-        103: "Nubes e claros",
-        104: "Anubrado 75%",
-        105: "Cuberto",
-        106: "Néboas",
-        107: "Chuvasco",
-        108: "Chuvasco (75%)",
-        109: "Chuvasco neve",
-        110: "Orballo",
-        111: "Choiva",
-        112: "Neve",
-        113: "Treboada",
-        114: "Brétema",
-        115: "Bancos de néboa",
-        116: "Nubes medias",
-        117: "Choiva débil",
-        118: "Chuvascos débiles",
-        119: "Treboada con poucas nubes",
-        120: "Auga neve",
-        121: "Sarabia",
-        122: "Non dispoñible",
-        201: "Despexado",
-        202: "Nubes altas",
-        203: "Nubes e claros",
-        204: "Anubrado 75%",
-        205: "Cuberto",
-        206: "Néboas",
-        207: "Chuvasco",
-        208: "Chuvasco (75%)",
-        209: "Chuvasco nieve",
-        210: "Orballo",
-        211: "Choiva",
-        212: "Neve",
-        213: "Treboada",
-        214: "Brétema",
-        215: "Bancos de néboa",
-        216: "Nubes medias",
-        217: "Choiva débil",
-        218: "Chuvascos débiles",
-        219: "Treboada con poucas nubes",
-        220: "Auga neve",
-        221: "Sarabia"
-    }
+    clima = weather.emojis
 
     response = requests.get(weatherLugo)
     weather = response.json()

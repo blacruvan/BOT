@@ -17,8 +17,4 @@ def getHeadlines():
     for new in headers:
         headLine, link = new.a.text.strip(), new.a.get('href')
         html += f'- <a href="https://www.eldiario.es{link}">{headLine}</a>\n\n'
-
-    print(len(html))
     return html
-
-getHeadlines()

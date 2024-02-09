@@ -1,7 +1,10 @@
 import logging
 import os
 from telegram import Update
-from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes, Updater
+from telegram import ReplyKeyboardMarkup
+from telegram.ext import CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from dotenv import load_dotenv
 
 from pathlib import Path
@@ -27,6 +30,7 @@ logging.basicConfig(
 #---------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------
 last_command = None
+msgId = None
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
@@ -49,8 +53,7 @@ async def processDocs(update, context):
     filename = update.message.document.file_name
     path = Path(f'input/{filename}')
     await file.download_to_drive(path)
-
-    if last_command == '/stats':
+    if last_command == 'stats':
         try:
             info, stats = mod.getStats(path)
             await context.bot.send_message(chat_id=update.effective_chat.id, text=info)
@@ -69,14 +72,14 @@ async def processDocs(update, context):
             await context.bot.send_message(chat_id=update.effective_chat.id, text='Unsupported file format.')
             print(f'Unsupported file format: {e}')
 
+    await show_buttons(update, context)
     conf.clearInDir()
     conf.clearOutDir()
 
 async def ask4Doc(update, context):
-    global last_command
-    last_command = update.message.text
-    print(last_command)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Por favor, envíame el documento")
+    #global last_command
+    #last_command = update.message.text
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Por favor, envíame el documento 😊")
 
 async def newsletter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/eldiario.jpg'), caption=mod.getHeadlines(), parse_mode='HTML')
@@ -86,8 +89,52 @@ async def cinema(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def proba(update: Update, context: ContextTypes.DEFAULT_TYPE):    
-    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption='text')
- 
+    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption='😊')
+
+async def button_click(update, context):
+    global msgId
+    global last_command
+    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=msgId)
+    query = update.callback_query
+    data = query.data
+    
+    if data == 'weather':
+        await weather(update, context)
+        await show_buttons(update, context)
+    elif data == 'nasa':
+        await nasa(update, context)
+        await show_buttons(update, context)
+    elif data == 'jokes':
+        await jokes(update, context)
+        await show_buttons(update, context)
+    elif data == 'convert':
+        last_command = data
+        await ask4Doc(update, context)
+    elif data == 'stats':
+        last_command = data
+        await ask4Doc(update, context)
+    elif data == 'newsletter':
+        await newsletter(update, context)
+        await show_buttons(update, context)
+    elif data == 'cinema':
+        await cinema(update, context)
+        await show_buttons(update, context)
+
+async def show_buttons(update, context):
+    global msgId
+    keyboard = [
+        [InlineKeyboardButton("Weather", callback_data='weather'),
+         InlineKeyboardButton("NASA", callback_data='nasa')],
+        [InlineKeyboardButton("Jokes", callback_data='jokes'),
+         InlineKeyboardButton("Convert", callback_data='convert')],
+        [InlineKeyboardButton("Stats", callback_data='stats'),
+         InlineKeyboardButton("Newsletter", callback_data='newsletter')],
+        [InlineKeyboardButton("Cinema", callback_data='cinema')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    msg = await context.bot.send_message(update.effective_chat.id, 'Menu', reply_markup=reply_markup)
+    msgId = msg.message_id
+
 def main():
     application = ApplicationBuilder().token(TOKEN).build()
     conf.createInOut()
@@ -100,7 +147,12 @@ def main():
     application.add_handler(CommandHandler("stats", ask4Doc))
     application.add_handler(CommandHandler("newsletter", newsletter))
     application.add_handler(CommandHandler("cinema", cinema))
+
     application.add_handler(CommandHandler("proba", proba))
+
+    application.add_handler(CallbackQueryHandler(button_click))
+    application.add_handler(CommandHandler('start', show_buttons))
+
     application.add_handler(MessageHandler(filters.Document.ALL, processDocs))
 
     application.run_polling()
