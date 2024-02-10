@@ -6,4 +6,5 @@ from .stats import *
 from .newsletter import *
 from .cinema import *
 from .bd import *
-from resources import *
+from .trivia import *
+from .translator import *

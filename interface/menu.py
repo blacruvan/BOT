@@ -11,7 +11,7 @@ main = [
         [InlineKeyboardButton("Newsletter", callback_data='newsletter'),
          InlineKeyboardButton("Cinema", callback_data='cinema')],
 
-        [InlineKeyboardButton("Proposta1", callback_data='convert'),
+        [InlineKeyboardButton("Trivia", callback_data='trivia'),
          InlineKeyboardButton("Proposta2", callback_data='convert')],
 
         [InlineKeyboardButton("💀 INFERNO 💀", callback_data='inferno')]
@@ -44,3 +44,21 @@ cinema = [
 
             [InlineKeyboardButton('« Volver', callback_data='volver')]
         ]
+
+game = [
+            [InlineKeyboardButton('« Volver', callback_data='volver'),
+            InlineKeyboardButton('Seguir jugando', callback_data='trivia')]
+        ]
+
+def generateTriviaMenu(c, i1, i2, i3):
+    import random
+    menu = [
+            [InlineKeyboardButton(c, callback_data='correcta'),
+            InlineKeyboardButton(i1, callback_data='incorrecta')],
+            
+            [InlineKeyboardButton(i2, callback_data='incorrecta'),
+            InlineKeyboardButton(i3, callback_data='incorrecta')],
+        ]
+    random.shuffle(menu)
+    menu.append([InlineKeyboardButton('« Volver', callback_data='volver')])
+    return menu

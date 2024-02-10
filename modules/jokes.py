@@ -1,11 +1,14 @@
 import requests
+from .translator import *
 
 def getJokes():
     URL = 'https://v2.jokeapi.dev/joke/Dark'
     try:
         response = requests.get(URL)
         info = response.json()
-        return f"{info['setup']}\n\n{info['delivery']}"
+        setup, delivery = translate(info['setup']), translate(info['delivery'])
+        return f"{setup}\n\n{delivery}"
 
     except Exception as e:
-        return f'Error when getting the joke :/ {e}'
+        return None
+    

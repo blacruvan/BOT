@@ -2,6 +2,7 @@ import logging
 import os
 from telegram import Update
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes, Updater
+from telegram import InlineKeyboardButton
 from telegram.ext import CallbackQueryHandler
 from telegram import InlineKeyboardMarkup
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from pathlib import Path
 import modules as mod
 import configuration as conf
 import interface.menu as menu
+import random
 
 # Authentication to manage the bot
 load_dotenv()
@@ -90,6 +92,21 @@ async def cinema(update: Update, context: ContextTypes.DEFAULT_TYPE, location: s
 async def inferno(update: Update, context: ContextTypes.DEFAULT_TYPE):    
     await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/inferno.jpg'), caption=mod.showDestiny('Vanesa'))
 
+async def trivia(update: Update, context: ContextTypes.DEFAULT_TYPE): 
+    message = await context.bot.send_message(update.effective_chat.id, "Cargando...")
+    trivial = mod.trivia()
+    if trivial:
+        pregunta, c, i1, i2, i3 = trivial
+        await context.bot.delete_message(update.effective_chat.id, message.message_id)
+
+        triviaButtons = menu.generateTriviaMenu(c, i1, i2, i3)
+        reply_markup = InlineKeyboardMarkup(triviaButtons)
+        query = update.callback_query
+        await query.edit_message_text(pregunta, reply_markup=reply_markup)
+    else:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="El trivial no está disponible ahora mismo 😟")
+
+
 async def proba(update: Update, context: ContextTypes.DEFAULT_TYPE):    
     await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption=mod.showDestiny('Vanesa'))
 
@@ -121,11 +138,10 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'stats': ask4Doc,
         'newsletter': newsletter,
         'inferno': inferno,
-        'volver': show_buttons
+        'trivia': trivia
     }
 
     action_function = actions.get(data)
-
     if data == 'weather':
         weatherButtons = menu.weather
         reply_markup = InlineKeyboardMarkup(weatherButtons)
@@ -152,6 +168,18 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         main_menu_message_id = None
         await show_buttons(update, context)
 
+    elif data == 'trivia':
+        await trivia(update, context)
+    
+    elif data in ['correcta', 'incorrecta']:
+        game = menu.game
+        reply_markup = InlineKeyboardMarkup(game)
+        query = update.callback_query
+        if data == 'correcta':
+            await query.edit_message_text('CORECTO ✅', reply_markup=reply_markup)
+        else:
+            await query.edit_message_text('INCORRECTO ❌', reply_markup=reply_markup)
+
     elif data == 'volver':
         await show_buttons(update, context)
 
@@ -164,7 +192,6 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     application = ApplicationBuilder().token(TOKEN).build()
     application.add_handler(CommandHandler('start', show_buttons))
-
     application.add_handler(CallbackQueryHandler(button_click))
     application.add_handler(MessageHandler(filters.Document.ALL, processDocs))
 
