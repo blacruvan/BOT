@@ -2,16 +2,14 @@ import logging
 import os
 from telegram import Update
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes, Updater
-from telegram import ReplyKeyboardMarkup
 from telegram.ext import CallbackQueryHandler
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardMarkup
 from dotenv import load_dotenv
 
 from pathlib import Path
-
-import requests
 import modules as mod
 import configuration as conf
+import interface.menu as menu
 
 # Authentication to manage the bot
 load_dotenv()
@@ -26,28 +24,29 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-#---------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------
-last_command = None
-msgId = None
 
-async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 
-async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=mod.getWeather(), parse_mode='HTML')
+last_command, main_menu_message_id = None, None
+
+async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE, location: str):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=mod.getWeather(location), parse_mode='HTML')
 
 async def nasa(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = await context.bot.send_message(update.effective_chat.id, "Cargando...")
     image, text = mod.getNasaImage()
+    await context.bot.delete_message(update.effective_chat.id, message.message_id)
     await context.bot.send_photo(chat_id=update.effective_chat.id, photo=image, caption=text, parse_mode='HTML')
     conf.clearOutDir()
 
 async def jokes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mod.getJokes())
 
-async def processDocs(update, context):
+async def processDocs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global last_command
+    global main_menu_message_id
 
     file = await context.bot.get_file(update.message.document)
     filename = update.message.document.file_name
@@ -71,92 +70,108 @@ async def processDocs(update, context):
         except Exception as e:
             await context.bot.send_message(chat_id=update.effective_chat.id, text='Unsupported file format.')
             print(f'Unsupported file format: {e}')
+    
 
+    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=main_menu_message_id)
+    main_menu_message_id = None
     await show_buttons(update, context)
     conf.clearInDir()
     conf.clearOutDir()
 
-async def ask4Doc(update, context):
-    #global last_command
-    #last_command = update.message.text
+async def ask4Doc(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Por favor, envíame el documento 😊")
 
 async def newsletter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/eldiario.jpg'), caption=mod.getHeadlines(), parse_mode='HTML')
 
-async def cinema(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption=mod.getCinemaListings(), parse_mode='HTML')
+async def cinema(update: Update, context: ContextTypes.DEFAULT_TYPE, location: str):
+    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption=mod.getCinemaListings(location), parse_mode='HTML')
 
+async def inferno(update: Update, context: ContextTypes.DEFAULT_TYPE):    
+    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/inferno.jpg'), caption=mod.showDestiny('Vanesa'))
 
 async def proba(update: Update, context: ContextTypes.DEFAULT_TYPE):    
-    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption='😊')
+    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption=mod.showDestiny('Vanesa'))
 
-async def button_click(update, context):
-    global msgId
+async def show_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global main_menu_message_id
+
+    keyboard = menu.main
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    if main_menu_message_id:
+        query = update.callback_query
+        if query:
+            await query.edit_message_text('MENU', reply_markup=reply_markup)
+    else:
+        msg = await context.bot.send_message(update.effective_chat.id, 'MENU', reply_markup=reply_markup)
+        main_menu_message_id = msg.message_id
+
+async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global main_menu_message_id
     global last_command
-    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=msgId)
+
     query = update.callback_query
     data = query.data
     
+    actions = {
+        'nasa': nasa,
+        'jokes': jokes,
+        'convert': ask4Doc,
+        'stats': ask4Doc,
+        'newsletter': newsletter,
+        'inferno': inferno,
+        'volver': show_buttons
+    }
+
+    action_function = actions.get(data)
+
     if data == 'weather':
-        await weather(update, context)
-        await show_buttons(update, context)
-    elif data == 'nasa':
-        await nasa(update, context)
-        await show_buttons(update, context)
-    elif data == 'jokes':
-        await jokes(update, context)
-        await show_buttons(update, context)
-    elif data == 'convert':
-        last_command = data
-        await ask4Doc(update, context)
-    elif data == 'stats':
-        last_command = data
-        await ask4Doc(update, context)
-    elif data == 'newsletter':
-        await newsletter(update, context)
-        await show_buttons(update, context)
+        weatherButtons = menu.weather
+        reply_markup = InlineKeyboardMarkup(weatherButtons)
+        await query.edit_message_text('¿De dónde?', reply_markup=reply_markup)
+ 
     elif data == 'cinema':
-        await cinema(update, context)
+        cinemaButtons = menu.cinema
+        reply_markup = InlineKeyboardMarkup(cinemaButtons)
+        await query.edit_message_text('¿Qué cartelera quieres ver?', reply_markup=reply_markup)
+    
+    elif data in ['convert', 'stats']:
+        last_command = data
+        await action_function(update, context)
+    
+    elif data in ['weather_lugo', 'weather_friol', 'weather_ribadeo', 'weather_coruña', 'weather_ferrol', 'weather_santiago', 'weather_pontevedra', 'weather_vigo', 'weather_ourense']:
+        await weather(update, context, data[8:])
+        await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=main_menu_message_id)
+        main_menu_message_id = None
         await show_buttons(update, context)
 
-async def show_buttons(update, context):
-    global msgId
-    keyboard = [
-        [InlineKeyboardButton("Weather", callback_data='weather'),
-         InlineKeyboardButton("NASA", callback_data='nasa')],
-        [InlineKeyboardButton("Jokes", callback_data='jokes'),
-         InlineKeyboardButton("Proposta", callback_data='convert')],
-        [InlineKeyboardButton("Convert", callback_data='convert'),
-         InlineKeyboardButton("Stats", callback_data='stats')],
-        [InlineKeyboardButton("Newsletter", callback_data='newsletter'),
-         InlineKeyboardButton("Cinema", callback_data='cinema')]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    msg = await context.bot.send_message(update.effective_chat.id, 'MENU', reply_markup=reply_markup)
-    msgId = msg.message_id
+    elif data in ['cinema_marineda', 'cinema_cancelas', 'cinema_cantones', 'cinema_lugo', 'cinema_vigo', 'cinema_ourense']:
+        await cinema(update, context, data[7:])
+        await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=main_menu_message_id)
+        main_menu_message_id = None
+        await show_buttons(update, context)
+
+    elif data == 'volver':
+        await show_buttons(update, context)
+
+    elif action_function:
+        await action_function(update, context)
+        await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=main_menu_message_id)
+        main_menu_message_id = None
+        await show_buttons(update, context)
 
 def main():
     application = ApplicationBuilder().token(TOKEN).build()
-    conf.createInOut()
-    echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
-    application.add_handler(echo_handler)
-    application.add_handler(CommandHandler('weather', weather))
-    application.add_handler(CommandHandler('nasa', nasa))
-    application.add_handler(CommandHandler('jokes', jokes))
-    application.add_handler(CommandHandler("convert", ask4Doc))
-    application.add_handler(CommandHandler("stats", ask4Doc))
-    application.add_handler(CommandHandler("newsletter", newsletter))
-    application.add_handler(CommandHandler("cinema", cinema))
-
-    application.add_handler(CommandHandler("proba", proba))
+    application.add_handler(CommandHandler('start', show_buttons))
 
     application.add_handler(CallbackQueryHandler(button_click))
-    application.add_handler(CommandHandler('menu', show_buttons))
-
     application.add_handler(MessageHandler(filters.Document.ALL, processDocs))
+
+    application.add_handler(CommandHandler("proba", proba))
 
     application.run_polling()
 
 if __name__ == '__main__':
     main()
+    conf.createInOut()

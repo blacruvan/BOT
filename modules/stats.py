@@ -1,9 +1,10 @@
+from typing import Tuple
 from pathlib import Path
 from io import StringIO
 from pathlib import Path
 import pandas as pd
 
-def getStats(file) -> (str, Path): 
+def getStats(file) -> Tuple[str, Path]: 
     if Path(file).suffix == '.csv':
         df = pd.read_csv(file)
 

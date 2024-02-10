@@ -1,9 +1,10 @@
+from typing import Tuple
 from pathlib import Path
 from io import BytesIO
 from PIL import Image
 import requests
 
-def getNasaImage() -> (Path, str):
+def getNasaImage() -> Tuple[Path, str]:
     KEY = 'TTAcbwe4sDbn2ZMc1pNY4XdxPUmC1hc5gpSDkCOL'
     URL = f'https://api.nasa.gov/planetary/apod?api_key={KEY}'
 

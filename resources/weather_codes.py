@@ -1,3 +1,15 @@
+locations = {
+    "lugo": '27028',
+    "friol": '27020',
+    "ribadeo": '27051',
+    "coruña": '15030',
+    "ferrol": '15036',
+    "santiago": '15078',
+    "pontevedra": '36038',
+    "vigo": '36057',
+    "ourense": '32054',
+    }
+
 description = {
         -9999: "Non dispoñible",
         101: "Despexado",
