@@ -38,12 +38,13 @@ async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE, location: 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mod.getWeather(location), parse_mode='HTML')
 
 async def getNasaImageWithTimeout():
+
     async def nasaAsync():
         return mod.getNasaImage()
     task = asyncio.create_task(nasaAsync())
 
     try:
-        result = await asyncio.wait_for(task, timeout=5)
+        result = await asyncio.wait_for(task, timeout=10)
         return result
     except asyncio.TimeoutError:
         task.cancel()
@@ -59,7 +60,7 @@ async def nasa(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_photo(chat_id=update.effective_chat.id, photo=image, caption=text, parse_mode='HTML')
     except Exception:
         await context.bot.delete_message(update.effective_chat.id, message.message_id)
-        await context.bot.send_message(update.effective_chat.id, "Tiempo de espera excedido. Inténtalo de nuevo más tarde.")
+        await context.bot.send_message(update.effective_chat.id, "Tiempo de espera excedido :(")
     finally:
         conf.clearOutDir()
 
