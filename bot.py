@@ -6,6 +6,7 @@ from telegram import InlineKeyboardButton
 from telegram.ext import CallbackQueryHandler
 from telegram import InlineKeyboardMarkup
 from dotenv import load_dotenv
+import asyncio
 
 from pathlib import Path
 import modules as mod
@@ -36,12 +37,31 @@ last_command, main_menu_message_id = None, None
 async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE, location: str):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mod.getWeather(location), parse_mode='HTML')
 
+async def getNasaImageWithTimeout():
+    async def nasaAsync():
+        return mod.getNasaImage()
+    task = asyncio.create_task(nasaAsync())
+
+    try:
+        result = await asyncio.wait_for(task, timeout=5)
+        return result
+    except asyncio.TimeoutError:
+        task.cancel()
+        raise TimeoutError("La operación excedió el tiempo de espera")
+
+
 async def nasa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = await context.bot.send_message(update.effective_chat.id, "Cargando...")
-    image, text = mod.getNasaImage()
-    await context.bot.delete_message(update.effective_chat.id, message.message_id)
-    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=image, caption=text, parse_mode='HTML')
-    conf.clearOutDir()
+
+    try:
+        image, text = await getNasaImageWithTimeout()
+        await context.bot.delete_message(update.effective_chat.id, message.message_id)
+        await context.bot.send_photo(chat_id=update.effective_chat.id, photo=image, caption=text, parse_mode='HTML')
+    except Exception:
+        await context.bot.delete_message(update.effective_chat.id, message.message_id)
+        await context.bot.send_message(update.effective_chat.id, "Tiempo de espera excedido. Inténtalo de nuevo más tarde.")
+    finally:
+        conf.clearOutDir()
 
 async def jokes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mod.getJokes())

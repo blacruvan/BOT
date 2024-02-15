@@ -2,7 +2,7 @@ import requests
 from .translator import *
 
 def getJokes():
-    URL = 'https://v2.jokeapi.dev/joke/Dark'
+    URL = 'https://v2.jokeapi.dev/joke/Any'
     try:
         response = requests.get(URL)
         info = response.json()
@@ -11,4 +11,6 @@ def getJokes():
 
     except Exception as e:
         return None
+    
+
     
