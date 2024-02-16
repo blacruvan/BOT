@@ -49,4 +49,4 @@ def getDestinyLevel(name):
 
 def showDestiny(name):
     nivel, nome_nivel = getDestinyLevel(name)
-    return f'O teu nivel no inferno é o {nivel}, pecas de {nome_nivel}.' if nivel != 1 else f'O teu nivel no inferno é o {nivel}, estás no {nome_nivel}.'
+    return f'O meu nivel no inferno é o {nivel}, peco de {nome_nivel}.' if nivel != 1 else f'O meu nivel no inferno é o {nivel}, estou no {nome_nivel}.'

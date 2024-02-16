@@ -12,7 +12,7 @@ main = [
          InlineKeyboardButton("Cinema", callback_data='cinema')],
 
         [InlineKeyboardButton("Trivia", callback_data='trivia'),
-         InlineKeyboardButton("Proposta2", callback_data='convert')],
+         InlineKeyboardButton("Ocio", callback_data='leisure')],
 
         [InlineKeyboardButton("💀 INFERNO 💀", callback_data='inferno')]
     ]
@@ -41,6 +41,18 @@ cinema = [
             [InlineKeyboardButton('Lugo', callback_data='cinema_lugo'),
             InlineKeyboardButton('Vigo', callback_data='cinema_vigo'),
             InlineKeyboardButton('Ourense', callback_data='cinema_ourense')],
+
+            [InlineKeyboardButton('« Volver', callback_data='volver')]
+        ]
+
+leisure = [
+            [InlineKeyboardButton('Coruña', callback_data='leisure_coruna'),
+            InlineKeyboardButton('Ferrol', callback_data='leisure_ferrol'),
+            InlineKeyboardButton('Lugo', callback_data='leisure_lugo')],
+            
+            [InlineKeyboardButton('Ourense', callback_data='leisure_ourense'),
+            InlineKeyboardButton('Pontevedra', callback_data='leisure_pontevedra'),
+            InlineKeyboardButton('Santiago', callback_data='leisure_santiago')],
 
             [InlineKeyboardButton('« Volver', callback_data='volver')]
         ]

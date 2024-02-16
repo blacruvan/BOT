@@ -8,3 +8,4 @@ from .cinema import *
 from .bd import *
 from .trivia import *
 from .translator import *
+from .leisure import *

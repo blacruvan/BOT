@@ -38,11 +38,9 @@ async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE, location: 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=mod.getWeather(location), parse_mode='HTML')
 
 async def getNasaImageWithTimeout():
-
     async def nasaAsync():
         return mod.getNasaImage()
     task = asyncio.create_task(nasaAsync())
-
     try:
         result = await asyncio.wait_for(task, timeout=10)
         return result
@@ -50,10 +48,8 @@ async def getNasaImageWithTimeout():
         task.cancel()
         raise TimeoutError("La operación excedió el tiempo de espera")
 
-
 async def nasa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = await context.bot.send_message(update.effective_chat.id, "Cargando...")
-
     try:
         image, text = await getNasaImageWithTimeout()
         await context.bot.delete_message(update.effective_chat.id, message.message_id)
@@ -94,7 +90,6 @@ async def processDocs(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(chat_id=update.effective_chat.id, text='Unsupported file format.')
             print(f'Unsupported file format: {e}')
     
-
     await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=main_menu_message_id)
     main_menu_message_id = None
     await show_buttons(update, context)
@@ -127,16 +122,15 @@ async def trivia(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="El trivial no está disponible ahora mismo 😟")
 
-
-async def proba(update: Update, context: ContextTypes.DEFAULT_TYPE):    
-    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/cinema.png'), caption=mod.showDestiny('Vanesa'))
+async def leisure(update: Update, context: ContextTypes.DEFAULT_TYPE, location):    
+    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=Path('resources/ocio.png'), caption=mod.getActivities(location), parse_mode='HTML')
 
 async def show_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global main_menu_message_id
 
     keyboard = menu.main
     reply_markup = InlineKeyboardMarkup(keyboard)
-    
+
     if main_menu_message_id:
         query = update.callback_query
         if query:
@@ -159,7 +153,8 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'stats': ask4Doc,
         'newsletter': newsletter,
         'inferno': inferno,
-        'trivia': trivia
+        'trivia': trivia,
+        'leisure': leisure
     }
 
     action_function = actions.get(data)
@@ -173,6 +168,11 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup = InlineKeyboardMarkup(cinemaButtons)
         await query.edit_message_text('¿Qué cartelera quieres ver?', reply_markup=reply_markup)
     
+    elif data == 'leisure':
+        leisureButtons = menu.leisure
+        reply_markup = InlineKeyboardMarkup(leisureButtons)
+        await query.edit_message_text('¿De qué lugar te interesan las actividades?', reply_markup=reply_markup)
+    
     elif data in ['convert', 'stats']:
         last_command = data
         await action_function(update, context)
@@ -185,6 +185,12 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data in ['cinema_marineda', 'cinema_cancelas', 'cinema_cantones', 'cinema_lugo', 'cinema_vigo', 'cinema_ourense']:
         await cinema(update, context, data[7:])
+        await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=main_menu_message_id)
+        main_menu_message_id = None
+        await show_buttons(update, context)
+
+    elif data in ['leisure_coruna', 'leisure_ferrol', 'leisure_lugo', 'leisure_ourense', 'leisure_pontevedra', 'leisure_santiago']:
+        await leisure(update, context, data[8:])
         await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=main_menu_message_id)
         main_menu_message_id = None
         await show_buttons(update, context)
@@ -215,9 +221,6 @@ def main():
     application.add_handler(CommandHandler('start', show_buttons))
     application.add_handler(CallbackQueryHandler(button_click))
     application.add_handler(MessageHandler(filters.Document.ALL, processDocs))
-
-    application.add_handler(CommandHandler("proba", proba))
-
     application.run_polling()
 
 if __name__ == '__main__':
