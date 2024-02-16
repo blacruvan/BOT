@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-COPY ./* /
+COPY . /
 RUN pip install -r requirements.txt
 
-CMD ["dir"]
+CMD ["python", "./bot.py"]
