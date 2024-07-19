@@ -1,24 +1,27 @@
-BOT de Telegram con menú de botones
+# BOT DE TELEGRAM
+## Descripción
+Este **bot de Telegram** que proporciona una experiencia interactiva a los usuarios mediante el uso de un **menú de botones**. La implementación del menú de botones permite a los usuarios navegar de manera eficiente y elegir entre varias opciones sin necesidad de escribir comandos manualmente.
 
-Funciones:
-  1. Weather: muestra el tiempo de la región seleccionada.
-  2. NASA: muestra la Astronomy Picture of the Day y su descripción.
-  3. Jokes: genera un chiste aleatorio.
-  4. Convert: hace la conversión de csv a json y viceversa.
-  5. Stats: muestra la información y estadística de un csv.
-  6. Newsletter: muestra las noticias en la portada de eldiario.com
-  7. Cinema: muestra la cartelera del cine seleccionado.
-  8. Trivia: preguntas interaactivas de trivial.
-  9. Ocio: muestra actividades próximas en el lugar seleccionado.
-  10. Inferno: accede a la BD y devuelve la información.
+## Funciones:
+- **Weather**: muestra el tiempo de la región seleccionada.
+- **NASA**: muestra la Astronomy Picture of the Day y su descripción.
+- **Jokes**: genera un chiste aleatorio.
+- **Convert**: hace la conversión de csv a json y viceversa.
+- **Stats**: muestra la información y estadística de un csv.
+- **Newsletter**: muestra las noticias en la portada de eldiario.com.
+- **Cinema**: muestra la cartelera del cine seleccionado.
+- **Trivia**: preguntas interactivas de trivial.
+- **Ocio**: muestra actividades próximas en el lugar seleccionado.
+- **Inferno**: accede a la BD y devuelve la información.
 
-Instrucciones:
+
+## Instrucciones:
+Para poder utilizar el bot debes seguir entos sencillos pasos:
   1. Descargar la imagen del docker con el comando:
-       > docker push vaneebc/bot:latest
+       > docker pull vaneebc/bot:latest
   2. Lanzar el docker usando el TOKEN como parámetro:
        > docker run --rm -e TOKEN=xxx vaneebc/bot:latest
-  3. Buscar el bot en Telegram con el nombre de:
-       > @vanee_bot
+  3. Buscar el bot en el buscador de Telegram con el nombre de:
+       > **@vanee_bot**
 
-
-LISTO!!
+<p align="center"><strong>¡LISTO! 😉</strong></p>
