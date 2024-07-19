@@ -8,7 +8,7 @@ Este **bot de Telegram** que proporciona una experiencia interactiva a los usuar
 - **Jokes**: genera un chiste aleatorio.
 - **Convert**: hace la conversión de csv a json y viceversa.
 - **Stats**: muestra la información y estadística de un csv.
-- **Newsletter**: muestra las noticias en la portada de eldiario.com.
+- **Newsletter**: muestra las noticias en la portada de eldiario.com
 - **Cinema**: muestra la cartelera del cine seleccionado.
 - **Trivia**: preguntas interactivas de trivial.
 - **Ocio**: muestra actividades próximas en el lugar seleccionado.
